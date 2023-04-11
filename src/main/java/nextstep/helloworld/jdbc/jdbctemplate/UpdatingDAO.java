@@ -3,7 +3,11 @@ package nextstep.helloworld.jdbc.jdbctemplate;
 import nextstep.helloworld.jdbc.Customer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+
+import java.sql.PreparedStatement;
 
 @Repository
 public class UpdatingDAO {
@@ -27,13 +31,14 @@ public class UpdatingDAO {
      */
     public void insert(Customer customer) {
         String sql = "insert into customers (first_name, last_name) values (?, ?)";
+        jdbcTemplate.update(sql, customer.getFirstName(), customer.getLastName());
     }
     /**
      * public int update(String sql, @Nullable Object... args)
      */
     public int delete(Long id) {
         String sql = "delete from customers where id = ?";
-        return 0;
+        return jdbcTemplate.update(sql, id);
     }
 
     /**
@@ -41,6 +46,17 @@ public class UpdatingDAO {
      */
     public Long insertWithKeyHolder(Customer customer) {
         final String sql = "insert into customers (first_name, last_name) values (?, ?)";
-        return null;
+        final KeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update((con -> {
+            PreparedStatement preparedStatement = con.prepareStatement(
+                    sql,
+                    new String[]{"id"}
+            );
+            preparedStatement.setString(1, customer.getFirstName());
+            preparedStatement.setString(2, customer.getLastName());
+            return preparedStatement;
+        }), generatedKeyHolder);
+        Number holderKey = generatedKeyHolder.getKey();
+        return holderKey.longValue();
     }
 }

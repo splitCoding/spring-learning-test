@@ -1,6 +1,8 @@
 package nextstep.helloworld.jdbc.jdbctemplate;
 
 import nextstep.helloworld.jdbc.Customer;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +20,8 @@ public class NamedParamDAO {
      */
     public int useMapSqlParameterSource(String firstName) {
         String sql = "select count(*) from customers where first_name = :first_name";
-        return 0;
+        MapSqlParameterSource first_name = new MapSqlParameterSource("first_name", firstName);
+        return namedParameterJdbcTemplate.queryForObject(sql, first_name, Integer.class);
     }
 
     /**
@@ -27,6 +30,8 @@ public class NamedParamDAO {
      */
     public int useBeanPropertySqlParameterSource(Customer customer) {
         String sql = "select count(*) from customers where first_name = :firstName";
-        return 0;
+        BeanPropertySqlParameterSource beanPropertySqlParameterSource = new BeanPropertySqlParameterSource(customer);
+        beanPropertySqlParameterSource.getValue("firstName");
+        return namedParameterJdbcTemplate.queryForObject(sql, beanPropertySqlParameterSource, Integer.class);
     }
 }
